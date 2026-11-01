@@ -1,0 +1,35 @@
+name: Build Pixel Runner PSP
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'pixel_runner_psp_homebrew_source.zip'
+      - '.github/workflows/build-psp.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+
+      - name: Extrair projeto
+        run: |
+          mkdir -p project
+          unzip pixel_runner_psp_homebrew_source.zip -d project
+
+      - name: Compilar para PSP
+        run: |
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE/project:/work" \
+            -w /work \
+            pspdev/pspdev:latest \
+            make
+
+      - name: Disponibilizar jogo
+        uses: actions/upload-artifact@v4
+        with:
+          name: PixelRunner-PSP
+          path: project/EBOOT.PBP
